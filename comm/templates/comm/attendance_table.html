@@ -1,0 +1,99 @@
+{% comment %}
+{% load i18n admin_static double_counter %}
+<div class="inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
+  <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+{{ inline_admin_formset.formset.management_form }}
+{{ inline_admin_formset.formset.non_form_errors }}
+
+{% for diocese in inline_admin_formset.formset.dioceses %}
+<div class="inline-related">
+    {{ diocese.name }}
+</div>
+{% endfor %}
+
+{% for service in inline_admin_formset.formset.services %}
+<div class="inline-related">
+    {{ service.short_name }}
+</div>
+{% endfor %}
+{% comment %}
+<table>
+{% for diocese in inline_admin_formset.formset.dioceses %}
+    <tr>
+        {% for service in inline_admin_formset.formset.services %}
+            <td>
+                {% with inline_admin_form=inline_admin_formset.next %}
+                <div class="inline-related{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}" 
+                     id="{{ inline_admin_formset.formset.prefix }}{{ forloop.parentloop.counter0 }}.{{ forloop.counter0 }}">
+                  {% for fieldset in inline_admin_form %}
+                    {% include "comm/attendance_fieldset.html" %}
+                  {% endfor %}
+                </div>
+                {% endwith %}
+            </td>
+        {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+
+<table>
+{% for row in inline_admin_formset.table_iter %}
+    <tr>
+        {% for inline_admin_form, cnt in row %}
+            <td>
+                <div class="inline-related{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}" 
+                     id="{{ inline_admin_formset.formset.prefix }}-{{ cnt }}">
+                  {% for fieldset in inline_admin_form %}
+                    {% include "comm/attendance_fieldset.html" %}
+                  {% endfor %}
+                </div>
+            </td>
+        {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+
+{% for inline_admin_form in inline_admin_formset %}<div class="inline-related{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}{% if forloop.last %} empty-form last-related{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+  {% if inline_admin_form.form.non_field_errors %}{{ inline_admin_form.form.non_field_errors }}{% endif %}
+  {% for fieldset in inline_admin_form %}
+    {% include "admin/includes/fieldset.html" %}
+  {% endfor %}
+</div>{% endfor %}
+</div>
+
+{% endcomment %}
+
+{% load i18n admin_static %}
+<div class="inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
+  <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+{{ inline_admin_formset.formset.management_form }}
+{{ inline_admin_formset.formset.non_form_errors }}
+
+
+<table>
+    <tr>
+        <td></td>
+        {% for service in inline_admin_formset.services %}
+            <td>{{ service.short_name }}</td>
+        {% endfor %}
+    </tr>
+{% for row, diocese in inline_admin_formset.table_iter %}
+    <tr>
+        <td> {{ diocese.name }} </td>
+        {% for inline_admin_form, cnt in row %}
+            <td>
+<div class="inline-related{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{{ cnt }}">
+  {% if inline_admin_form.form.non_field_errors %}{{ inline_admin_form.form.non_field_errors }}{% endif %}
+  {% for fieldset in inline_admin_form %}
+    {% include "comm/attendance_fieldset.html" %}
+  {% endfor %}
+  {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
+</div>
+            </td>
+        {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+
+</div>
+
