@@ -21,3 +21,4 @@ def make_html_links(links, extra_attrs=None):
     for link in links:
         html_links.append(make_html_link(*link, extra_attrs=extra_attrs))
     return mark_safe(' | '.join(html_links))
+

@@ -5,8 +5,10 @@ from django.utils import timezone
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+
 def _current_date():
     return timezone.now().date()
+
 
 class CommunionDay(models.Model):
     name = models.CharField(max_length=100, verbose_name=u"nazwa",
@@ -23,6 +25,7 @@ class CommunionDay(models.Model):
     def __unicode__(self):
         return '%s (%s)' % (self.name, self.date)
 
+
 class Branch(models.Model):
     name = models.CharField(max_length=100, verbose_name=u"nazwa")
 
@@ -32,6 +35,7 @@ class Branch(models.Model):
     
     def __unicode__(self):
         return self.name
+
 
 class Diocese(models.Model):
     name = models.CharField(max_length=100, verbose_name=u"nazwa",
@@ -64,29 +68,12 @@ class Report(models.Model):
     def __unicode__(self):
         return u'%s - %s' % (self.communion_day, self.branch)
     
-"""
-CONCLUSION_DISPLAY_LENGTH = 30
-
-class Conclusion(models.Model):
-    report = models.ForeignKey('Report', verbose_name=u"sprawozdanie")
-    content = models.TextField(verbose_name=u"treść")
-    
-    class Meta:
-        verbose_name = u"wniosek"
-        verbose_name_plural = u"główne wnioski"
-    
-    def __unicode__(self):
-        if len(self.content) > CONCLUSION_DISPLAY_LENGTH:
-            return self.content[:CONCLUSION_DISPLAY_LENGTH] + "..."
-        else:
-            return self.content
-"""
 
 class CustomTextConfig(models.Model):
     name = models.CharField(max_length=100, verbose_name=u"nazwa")
     obligatory = models.BooleanField(default=False,
             verbose_name=u"obowiązkowy",
-            help_text=u"Punktu obowiązkowe pojawią się w każdym sprawozdaniu.")
+            help_text=u"Punkty obowiązkowe pojawią się w każdym sprawozdaniu.")
     use_in_report = models.BooleanField(default=False,
             verbose_name=u"w raporcie zbiorczym",
             help_text=u"Czy uwzględnić w zbiorczym raporcie z DWDD.")
@@ -117,12 +104,17 @@ SERVICE_SHORT_NAME_MLEN = 10
 class Service(models.Model):
     full_name = models.CharField(max_length=100, verbose_name=u"pełna nazwa")
     short_name = models.CharField(max_length=SERVICE_SHORT_NAME_MLEN,
-            verbose_name=u"krótka nazwa",
+            verbose_name=u"krótka nazwa", #unique=True,
             help_text="max %s znaków, np. MDDK" % SERVICE_SHORT_NAME_MLEN)
+    display_prioirity = models.IntegerField(default=0,
+            verbose_name=u"priorytet w tabelce",
+            help_text=u"posługi w tabelce obecności są uporządkowane według " +
+                u"malejącego priorytetu")
     
     class Meta:
         verbose_name = u"posługa"
         verbose_name_plural = u"posługi"
+        ordering = ['-display_prioirity']
     
     def __unicode__(self):
         return '%s (%s)' % (self.full_name, self.short_name)
