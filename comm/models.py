@@ -9,8 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 class MyHTMLField(models.TextField):
     """
-    A large string field for HTML content. It uses the TinyMCE widget in
-    forms.
+    tinymce.models.HTMLField przerobiony tak, zeby mozna bylo ustalic wielkosc
     """
 
     def __init__(self, *args, **kwargs):

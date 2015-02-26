@@ -1,12 +1,12 @@
 # -*- coding: UTF-8 -*-
 
-from wkhtmltopdf.views import PDFTemplateResponse
-
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.utils.encoding import force_unicode
 from django.template import RequestContext, loader
 from django.conf import settings
+#from django_xhtml2pdf.utils import render_to_pdf_response
+from django_weasyprint.views import PDFTemplateResponse 
 
 from comm.models import CommunionDay, Service, Diocese, Branch, Attendance, \
         CustomTextConfig, CustomText, Report
@@ -102,25 +102,38 @@ def generate_report(request, communion_day_id):
     
     communion_day = CommunionDay.objects.get(id=communion_day_id)
 
-    template = loader.get_template('comm/report.html')
+    #template = loader.get_template('comm/report.html')
     
     context = RequestContext(request, {'report': 
         _generate_cday_report(communion_day)})
     
-    filename = '%s %s' % (force_unicode(communion_day.name),
+    pdfname = '%s %s' % (force_unicode(communion_day.name),
             timezone.now().date())
 
-    response = PDFTemplateResponse(request, template, context=context,
-            filename=filename)
-    #response = HttpResponse(template.render(context))
+    #print loader.get_template('comm/report.html').render(context)
+
+    #return render_to_pdf_response('comm/report.html', context=context,
+    #        pdfname=pdfname)
+
+    response = PDFTemplateResponse(pdfname, request, 'comm/report.html', 
+            context=context)
+    return response
 
     """
+    return HttpResponse(loader.get_template('comm/report.html').render(context))
+    """
+
+    """
+    response = HttpResponse(content_type='application/pdf')
+
+    pdf_response = generate_pdf(rendered_template,
+            file_object=response)
+
+    response = PDFTemplateRespons(request, template, context=context,
+            filename=filename)
 
     # Create the HttpResponse object with the appropriate PDF headers.
-    response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = \
             'attachment; filename="%s.pdf"' % filename
+    return pdf_response
     """
-
-    
-    return response

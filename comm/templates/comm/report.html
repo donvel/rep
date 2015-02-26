@@ -5,7 +5,10 @@
 
 <body>
 
-<link rel="stylesheet" type="text/css" href="{{ report.css_path }}" />
+{% load staticfiles %}
+    
+<link rel="stylesheet" type="text/css" href="{% static 'css/comm/report.css' %}"/>
+
 <h1>
     <div class="report-head">
         <div class="report-name">{{ report.head.name }}</div>

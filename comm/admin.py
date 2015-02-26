@@ -40,7 +40,8 @@ class AttendanceInlineAdminFormSet(admin.helpers.InlineAdminFormSet):
                 for d in self.formset.dioceses]
 
 
-def attendance_formset_factory(FormSet, initial=None, services=None, dioceses=None):
+def attendance_formset_factory(FormSet, initial=None, services=None,
+        dioceses=None):
     class AttendanceFormSet(FormSet):
         def __init__(self, *args, **kwargs):
             old_initial = kwargs.pop('initial', [])
@@ -50,7 +51,6 @@ def attendance_formset_factory(FormSet, initial=None, services=None, dioceses=No
             self.services = services
             self.dioceses = dioceses
     return AttendanceFormSet
-
 
 
 class AttendanceInline(admin.TabularInline):
@@ -101,11 +101,10 @@ class CustomTextInline(admin.StackedInline):
     extra = 1
     
     def _get_unfilled(self, obj):
+        if obj is None:
+            assert False # mozliwe ?
         always_present = CustomTextConfig.objects.filter(obligatory=True)
-        if obj is None: # mozliwe ??
-            return always_present
-        else:
-            return always_present.exclude(customtext__report=obj)
+        return always_present.exclude(customtext__report=obj)
 
     def get_extra(self, request, obj=None, **kwargs):
         return self._get_unfilled(obj).count() + 1
