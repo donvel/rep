@@ -1,9 +1,44 @@
 # -*- coding: UTF-8 -*-
 
-from tinymce.models import HTMLField
+from tinymce import widgets as tinymce_widgets
+from django.contrib.admin import widgets as admin_widgets
 from django.utils import timezone
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+class MyHTMLField(models.TextField):
+    """
+    A large string field for HTML content. It uses the TinyMCE widget in
+    forms.
+    """
+
+    def __init__(self, *args, **kwargs):
+        rows = kwargs.pop('rows', 10)
+        cols = kwargs.pop('cols', 40)
+        super(MyHTMLField, self).__init__(*args, **kwargs)
+        self.attrs = {'cols': cols, 'rows': rows}
+
+    def formfield(self, **kwargs):
+        
+        class MyWidget(tinymce_widgets.TinyMCE):
+            def __init__(self1, *args, **kwargs):
+                super(MyWidget, self1).__init__(
+                        *args, **dict(kwargs, attrs=self.attrs))
+        
+        class MyAdminWidget(tinymce_widgets.AdminTinyMCE):
+            def __init__(self1, *args, **kwargs):
+                super(MyAdminWidget, self1).__init__(
+                        *args, **dict(kwargs, attrs=self.attrs))
+
+        defaults = {'widget': MyWidget}
+        defaults.update(kwargs)
+
+        # As an ugly hack, we override the admin widget
+        if defaults['widget'] == admin_widgets.AdminTextareaWidget:
+            defaults['widget'] = MyAdminWidget
+
+        return super(MyHTMLField, self).formfield(**defaults)
 
 
 def _current_date():
@@ -21,31 +56,35 @@ class CommunionDay(models.Model):
     class Meta:
         verbose_name = "Dzień Wspólnoty"
         verbose_name_plural = "Dni Wspólnoty"
+        ordering = ['-date']
 
     def __unicode__(self):
         return '%s (%s)' % (self.name, self.date)
 
 
 class Branch(models.Model):
-    name = models.CharField(max_length=100, verbose_name=u"nazwa")
+    name = models.CharField(max_length=100, verbose_name=u"nazwa",
+            unique=True)
 
     class Meta:
         verbose_name = "filia"
         verbose_name_plural = "filie"
+        ordering = ['name']
     
     def __unicode__(self):
-        return self.name
+        return u"Filia " + self.name
 
 
 class Diocese(models.Model):
     name = models.CharField(max_length=100, verbose_name=u"nazwa",
-            help_text='np. "radomska"')
+            help_text='np. "radomska"', unique=True)
     branch = models.ForeignKey('Branch', verbose_name=u"filia")
     arch = models.BooleanField(default=False, verbose_name=u"archi")
 
     class Meta:
         verbose_name = u"diecezja"
         verbose_name_plural = u"diecezje"
+        ordering = ['name']
     
     def __unicode__(self):
         prefix = 'Archidiecezja' if self.arch else 'Diecezja'
@@ -70,17 +109,22 @@ class Report(models.Model):
     
 
 class CustomTextConfig(models.Model):
-    name = models.CharField(max_length=100, verbose_name=u"nazwa")
+    name = models.CharField(max_length=100, verbose_name=u"nazwa", unique=True)
     obligatory = models.BooleanField(default=False,
             verbose_name=u"obowiązkowy",
             help_text=u"Punkty obowiązkowe pojawią się w każdym sprawozdaniu.")
     use_in_report = models.BooleanField(default=False,
             verbose_name=u"w raporcie zbiorczym",
             help_text=u"Czy uwzględnić w zbiorczym raporcie z DWDD.")
+    display_priority = models.IntegerField(default=0,
+            verbose_name=u"priorytet w sprawozdaniu",
+            help_text=u"pola w sprawozdaniu są uporządkowane według " +
+                u"malejącego priorytetu")
 
     class Meta:
         verbose_name = u"typ pola"
         verbose_name_plural = u"typy pól"
+        ordering = ['-display_priority']
     
     def __unicode__(self):
         return self.name
@@ -89,11 +133,13 @@ class CustomTextConfig(models.Model):
 class CustomText(models.Model):
     report = models.ForeignKey('Report', verbose_name=u"sprawozdanie")
     config = models.ForeignKey('CustomTextConfig', verbose_name=u"typ")
-    content = HTMLField(null=True, blank=True, verbose_name=u"treść")
+    content = MyHTMLField(null=True, blank=True, verbose_name=u"treść",
+            cols=80, rows=30)
     
     class Meta:
         verbose_name = u"pole tekstowe"
         verbose_name_plural = u"pola tekstowe"
+        unique_together = (("report", "config"),)
     
     def __unicode__(self):
         return str(self.config)
@@ -102,9 +148,10 @@ class CustomText(models.Model):
 SERVICE_SHORT_NAME_MLEN = 10
 
 class Service(models.Model):
-    full_name = models.CharField(max_length=100, verbose_name=u"pełna nazwa")
+    full_name = models.CharField(max_length=100, verbose_name=u"pełna nazwa",
+            unique=True)
     short_name = models.CharField(max_length=SERVICE_SHORT_NAME_MLEN,
-            verbose_name=u"krótka nazwa", #unique=True,
+            verbose_name=u"krótka nazwa", unique=True,
             help_text="max %s znaków, np. MDDK" % SERVICE_SHORT_NAME_MLEN)
     display_prioirity = models.IntegerField(default=0,
             verbose_name=u"priorytet w tabelce",

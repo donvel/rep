@@ -1,0 +1,92 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+
+<link rel="stylesheet" type="text/css" href="{{ report.css_path }}" />
+<h1>
+    <div class="report-head">
+        <div class="report-name">{{ report.head.name }}</div>
+        <div class="report-topic">{{ report.head.topic }}</div>
+        <div class="report-date">{{ report.head.date }}</div>
+    </div>
+</h1>
+
+<br>
+<hr class="main">
+<br>
+
+<p>
+    <div class="attendance">
+        <div class="title">
+            {{ report.attendance.title }}
+        </div>
+        <br>
+        <table class="attendance">
+            {% for row in report.attendance.rows %}
+                <tr class="attendance {% if forloop.first %} first {% endif %}">
+                    {% for field in row %}
+                        <td class="attendance {% if forloop.first %} first {% endif %}">
+                            {{ field }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</p>
+
+<br>
+<hr class="main">
+<br>
+
+{% for text_field in report.text_fields %}
+<p>
+    <div class="textfield">
+        <div class="title">
+            {{ text_field.title }}
+        </div>
+        <div class="content">
+            <p>
+            {{ text_field.body|safe }}
+            </p>
+        </div>
+    </div>
+    <br>
+    <hr class="main">
+    <br>
+</p>
+{% endfor %}
+
+{% for text_mfield in report.text_multifields %}
+<p>
+    <div class="textfield">
+        <div class="title">
+            {{ text_mfield.title }}
+        </div>
+        {% for part in text_mfield.parts %}
+        <ul>
+            <li>
+            <div class="part title">
+                {{ part.title }}
+            </div>
+            <div class="part content">
+                <p>
+                {{ part.body|safe }}
+                </p>
+            </div>
+        </ul>
+        {% if not forloop.last %}
+        <hr class="secondary">
+        {% endif %}
+        {% endfor %}
+    </div>
+    <br>
+    <hr class="main">
+    <br>
+</p>
+{% endfor %}
+</body>
+</html>

@@ -8,10 +8,7 @@ from django.core.urlresolvers import reverse
 
 from comm.models import CommunionDay, Branch, Diocese, Report, \
         CustomTextConfig, CustomText, Service, Attendance
-        #Conclusion
 from comm.utils import make_html_link
-
-admin.site.unregister(Group)
 
 
 class AttendanceAdmin(admin.ModelAdmin):
@@ -38,33 +35,9 @@ class AttendanceInlineAdminFormSet(admin.helpers.InlineAdminFormSet):
             d = iform.form.initial.get('diocese')
             inline_dict[(s,d)] = iform, counter
             counter += 1
+        print inline_dict
         return [([inline_dict[(s.id, d.id)] for s in self.formset.services], d)
                 for d in self.formset.dioceses]
-
-class CustomTextInline(admin.StackedInline):
-    model = CustomText
-    extra = 1
-    
-    def _get_unfilled(self, obj):
-        always_present = CustomTextConfig.objects.filter(obligatory=True)
-        if obj is None: # mozliwe ??
-            return always_present
-        else:
-            return always_present.exclude(customtext__report=obj)
-
-    def get_extra(self, request, obj=None, **kwargs):
-        return self._get_unfilled(obj).count() + 1
-
-    def get_formset(self, request, obj=None, **kwargs):
-        initial = []
-        if request.method == "GET":
-            unfilled = self._get_unfilled(obj)
-            initial = [{'config': c.id} for c in unfilled]
-
-        formset = super(CustomTextInline, self) \
-                .get_formset(request, obj, **kwargs)
-        formset.__init__ = curry(formset.__init__, initial=initial)
-        return formset
 
 
 def attendance_formset_factory(FormSet, initial=None, services=None, dioceses=None):
@@ -123,6 +96,32 @@ class AttendanceInline(admin.TabularInline):
                 initial=initial, services=services, dioceses=dioceses)
 
 
+class CustomTextInline(admin.StackedInline):
+    model = CustomText
+    extra = 1
+    
+    def _get_unfilled(self, obj):
+        always_present = CustomTextConfig.objects.filter(obligatory=True)
+        if obj is None: # mozliwe ??
+            return always_present
+        else:
+            return always_present.exclude(customtext__report=obj)
+
+    def get_extra(self, request, obj=None, **kwargs):
+        return self._get_unfilled(obj).count() + 1
+
+    def get_formset(self, request, obj=None, **kwargs):
+        initial = []
+        if request.method == "GET":
+            unfilled = self._get_unfilled(obj)
+            initial = [{'config': c.id} for c in unfilled]
+
+        formset = super(CustomTextInline, self) \
+                .get_formset(request, obj, **kwargs)
+        formset.__init__ = curry(formset.__init__, initial=initial)
+        return formset
+
+
 class ReportAdmin(AttendanceAdmin):
     fields = ['communion_day', 'branch', 'file_report']
     inlines = [AttendanceInline, CustomTextInline]
@@ -167,7 +166,7 @@ class BranchAdmin(admin.ModelAdmin):
     inlines = [DioceseInline,]
 
 
-
+admin.site.unregister(Group)
 admin.site.register(CommunionDay, CommunionDayAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Branch, BranchAdmin)
