@@ -27,6 +27,13 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 class AttendanceInlineAdminFormSet(admin.helpers.InlineAdminFormSet):
 
+    def help_text(self):
+        if self.formset.dioceses:
+            return u""
+        else:
+            return u'Kliknij "Zapisz i kontynuuj edycję", ' + \
+                    u'aby móc edytować listę obecności.'
+
     def table_iter(self):
         inline_dict = {}
         counter = 0
@@ -35,7 +42,6 @@ class AttendanceInlineAdminFormSet(admin.helpers.InlineAdminFormSet):
             d = iform.form.initial.get('diocese')
             inline_dict[(s,d)] = iform, counter
             counter += 1
-        print inline_dict
         return [([inline_dict[(s.id, d.id)] for s in self.formset.services], d)
                 for d in self.formset.dioceses]
 
@@ -62,13 +68,13 @@ class AttendanceInline(admin.TabularInline):
         return Service.objects.all()
 
     def _get_dioceses(self, obj):
-        if obj is None:
-            assert False # mozliwe ?
+        if not obj:
+            return Diocese.objects.none()
         return Diocese.objects.filter(branch=obj.branch)
 
     def _get_filled(self, obj):
-        if obj is None:
-            assert False # mozliwe ?
+        if not obj:
+            return Attendance.objects.none()
         return Attendance.objects.filter(report=obj)
     
     def get_extra(self, request, obj=None, **kwargs):
@@ -101,9 +107,9 @@ class CustomTextInline(admin.StackedInline):
     extra = 1
     
     def _get_unfilled(self, obj):
-        if obj is None:
-            assert False # mozliwe ?
         always_present = CustomTextConfig.objects.filter(obligatory=True)
+        if obj is None:
+            return always_present
         return always_present.exclude(customtext__report=obj)
 
     def get_extra(self, request, obj=None, **kwargs):

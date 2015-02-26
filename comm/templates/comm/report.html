@@ -86,9 +86,11 @@
         {% endif %}
         {% endfor %}
     </div>
+    {% if not forloop.last %}
     <br>
     <hr class="main">
     <br>
+    {% endif %}
 </p>
 {% endfor %}
 </body>

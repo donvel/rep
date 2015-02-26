@@ -63,7 +63,7 @@ class CommunionDay(models.Model):
 
 class Branch(models.Model):
     name = models.CharField(max_length=100, verbose_name=u"nazwa",
-            unique=True)
+            help_text='np. "warszawska"', unique=True)
 
     class Meta:
         verbose_name = "filia"
@@ -102,6 +102,7 @@ class Report(models.Model):
         verbose_name = u"sprawozdanie filialne"
         verbose_name_plural = u"sprawozdania filialne"
         unique_together = (("branch", "communion_day"),)
+        ordering = ['communion_day', 'branch']
     
     def __unicode__(self):
         return u'%s - %s' % (self.communion_day, self.branch)

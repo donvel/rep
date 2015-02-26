@@ -6,3 +6,7 @@
 .attendance-table .form-row {
     border-bottom: none;
 }
+
+.help-text {
+    padding: 5px;
+}

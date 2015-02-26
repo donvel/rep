@@ -1,5 +1,5 @@
 .report-head {
-    font-size: xx-large;
+    font-size: x-large;
     font-weight: normal;
     text-align: center;
 }
@@ -18,17 +18,17 @@ table.attendance {
 
 td.attendance {
     border: 1px solid black;
-    padding: 5px;
+    padding: 3px;
 }
 
 .title {
-    font-size: x-large;
+    font-size: large;
     font-weight: bold;
     text-decoration: underline;
 }
 
 .title.part {
-    font-size: large;
+    font-size: medium;
     text-decoration: none;
 }
 
@@ -37,7 +37,7 @@ td.attendance {
 }
 
 hr.main {
-    border-width: 5px;
+    border-width: 3px;
 }
 
 hr.secondary {
@@ -47,5 +47,6 @@ hr.secondary {
 }
 
 body {
-    margin 100px;
+    margin: 10px;
+    font-size: small;
 }

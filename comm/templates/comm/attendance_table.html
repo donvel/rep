@@ -4,6 +4,13 @@
 {{ inline_admin_formset.formset.management_form }}
 {{ inline_admin_formset.formset.non_form_errors }}
 
+{% if inline_admin_formset.help_text %}
+    
+    <div class="help-text">
+        {{ inline_admin_formset.help_text }}
+    </div>
+
+{% else %}
 
 <table class="attendance-table">
     <tr>
@@ -30,5 +37,6 @@
 {% endfor %}
 </table>
 
+{% endif %}
 </div>
 

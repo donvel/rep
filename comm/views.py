@@ -1,14 +1,11 @@
 # -*- coding: UTF-8 -*-
 
-from django.http import HttpResponse, HttpResponseForbidden
-from django.utils import timezone
-from django.utils.encoding import force_unicode
+from django.http import HttpResponseForbidden
 from django.template import RequestContext, loader
-from django.conf import settings
-#from django_xhtml2pdf.utils import render_to_pdf_response
+from django.utils.text import slugify
 from django_weasyprint.views import PDFTemplateResponse 
 
-from comm.models import CommunionDay, Service, Diocese, Branch, Attendance, \
+from comm.models import CommunionDay, Service, Branch, Attendance, \
         CustomTextConfig, CustomText, Report
 
 
@@ -90,7 +87,6 @@ def _generate_cday_report(cday):
     report['attendance'] = generate_attendance()
     report['text_fields'] = generate_text_fields()
     report['text_multifields'] = generate_text_mfields()
-    report['css_path'] = 'file://%scss/comm/report.css' % settings.STATIC_ROOT
 
     return report
 
@@ -101,39 +97,11 @@ def generate_report(request, communion_day_id):
     
     
     communion_day = CommunionDay.objects.get(id=communion_day_id)
-
-    #template = loader.get_template('comm/report.html')
     
     context = RequestContext(request, {'report': 
         _generate_cday_report(communion_day)})
-    
-    pdfname = '%s %s' % (force_unicode(communion_day.name),
-            timezone.now().date())
 
-    #print loader.get_template('comm/report.html').render(context)
+    response = PDFTemplateResponse('%s.pdf' % slugify(unicode(communion_day)),
+            request, 'comm/report.html', context=context)
 
-    #return render_to_pdf_response('comm/report.html', context=context,
-    #        pdfname=pdfname)
-
-    response = PDFTemplateResponse(pdfname, request, 'comm/report.html', 
-            context=context)
     return response
-
-    """
-    return HttpResponse(loader.get_template('comm/report.html').render(context))
-    """
-
-    """
-    response = HttpResponse(content_type='application/pdf')
-
-    pdf_response = generate_pdf(rendered_template,
-            file_object=response)
-
-    response = PDFTemplateRespons(request, template, context=context,
-            filename=filename)
-
-    # Create the HttpResponse object with the appropriate PDF headers.
-    response['Content-Disposition'] = \
-            'attachment; filename="%s.pdf"' % filename
-    return pdf_response
-    """
