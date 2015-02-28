@@ -3,7 +3,7 @@
 from django.http import HttpResponseForbidden
 from django.template import RequestContext, loader
 from django.utils.text import slugify
-from django_weasyprint.views import PDFTemplateResponse 
+from django.conf import settings
 
 from comm.models import CommunionDay, Service, Branch, Attendance, \
         CustomTextConfig, CustomText, Report
@@ -100,8 +100,15 @@ def generate_report(request, communion_day_id):
     
     context = RequestContext(request, {'report': 
         _generate_cday_report(communion_day)})
-
-    response = PDFTemplateResponse('%s.pdf' % slugify(unicode(communion_day)),
-            request, 'comm/report.html', context=context)
+    
+    if 'django_weasyprint' in settings.INSTALLED_APPS:
+        from django_weasyprint.views import PDFTemplateResponse 
+        response = PDFTemplateResponse(
+                '%s.pdf' % slugify(unicode(communion_day)),
+                request, 'comm/report.html', context=context)
+    else:
+        from django.template.response import TemplateResponse
+        response = TemplateResponse(
+                request, 'comm/report.html', context=context)
 
     return response
